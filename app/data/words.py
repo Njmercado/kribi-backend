@@ -1,21 +1,60 @@
 from app.db import SessionDep
 from app.model.word import Word
+from sqlmodel import select, func
+from fastapi import exceptions
+from datetime import datetime
+from sqlalchemy.orm import load_only 
 
-def get_word_by_id(word_id: str):
-	return SessionDep.get(Word, word_id)
+def get_word_by_id(session: SessionDep, word_id: str) -> Word: 
+	return session.exec(
+		select(Word)
+  	.where(Word.id == word_id, Word.deleted == False)
+		.options(load_only(Word.word, Word.definitions, Word.translations, Word.type))
+	).first()
 
 def get_word(session: SessionDep, word: str) -> Word:
-	try:
-		return session.get(Word, word)
-	except Exception as e:
-		print(f"Error occurred while fetching word: {e}")
-		return
+	return session.exec(select(Word).where(Word.word == word, Word.deleted == False)).one()
 
 def get_all_words_from_letter(session: SessionDep, letter: str):
-	return {"letter": letter}
+	return session.exec(select(Word).where(Word.word.startswith(letter), Word.deleted == False)).all()
 
-def delete_word(word: str):
-	return {"word": word}
+def get_all_words_from_search(session: SessionDep, substring: str):
+	return session.exec(
+  	select(Word)
+   	.where(
+      func
+      	.upper(Word.word)
+       	.contains(substring.upper()),
+      Word.deleted == False
+    )
+  ).all()
 
-def create_word(word: str):
-	return {"word": word}
+def delete_word(session: SessionDep, word_id: int):
+	found_word = session.exec(select(Word).where(Word.id == word_id, Word.deleted == False)).first()
+	if found_word:
+		found_word.deleted = True
+		session.add(found_word)
+		session.commit()
+	else:
+		raise exceptions.ValidationException("Word not found")
+
+def create_word(session: SessionDep, word: Word):
+	if not session.exec(select(Word).where(Word.word == word.word)).first():
+		session.add(word)
+		session.commit()
+	else:
+		raise exceptions.ValidationException("Word already exists")
+
+def update_word(session: SessionDep, word_id: int, word: Word):
+	found_word = session.exec(select(Word).where(Word.id == word_id, Word.deleted == False)).first()
+	if found_word:
+		found_word.word = word.word or found_word.word
+		found_word.definitions = word.definitions or found_word.definitions
+		found_word.type = word.type or found_word.type
+		found_word.translations = word.translations or found_word.translations
+		found_word.updated_at = datetime.now()
+		session.add(found_word)
+		session.commit()
+		return found_word
+	else:
+		raise exceptions.ValidationException("Word not found")

@@ -1,8 +1,8 @@
-from app.data import words
-from app.db import SessionDep
+from data import words
+from db import SessionDep
 from fastapi import exceptions, Response, HTTPException
-
-from app.model.word import Word
+from model.word import Word
+from utils import responses
 
 def get_word(session: SessionDep, word: str):
 	try:
@@ -35,7 +35,7 @@ def search_words(session: SessionDep, substring: str):
 def delete_word(session: SessionDep, word_id: int):
 	try:
 		words.delete_word(session, word_id)
-		return Response(status_code=200, content=f"Word with id '{word_id}' deleted successfully :)")
+		return responses.WORD_DELETED_SUCCESSFULLY(word_id)
 	except exceptions.ValidationException as e:
 		print('Exception: ', e)
 		return HTTPException(status_code=404, detail=str(e))
@@ -46,7 +46,7 @@ def delete_word(session: SessionDep, word_id: int):
 def create_word(session: SessionDep, word: Word):
 	try:
 		words.create_word(session, word)
-		return Response(status_code=201, content=f"Word '{word.word}' created successfully :)")
+		return responses.WORD_CREATED_SUCCESSFULLY(word.word)
 	except exceptions.ValidationException as e:
 		print('Exception: ', e)
 		return HTTPException(status_code=400, detail=str(e))

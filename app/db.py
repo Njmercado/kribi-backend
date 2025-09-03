@@ -2,7 +2,6 @@ import os
 from sqlmodel import create_engine, Session, SQLModel
 from fastapi import Depends
 from typing import Annotated
-from app.model.word import Word
 
 POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "example")

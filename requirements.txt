@@ -4,3 +4,6 @@ fastapi[standard]
 psycopg2-binary
 sqlmodel
 alembic
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart

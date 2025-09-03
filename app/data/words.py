@@ -1,5 +1,5 @@
-from app.db import SessionDep
-from app.model.word import Word
+from db import SessionDep
+from model.word import Word
 from sqlmodel import select, func
 from fastapi import exceptions
 from datetime import datetime

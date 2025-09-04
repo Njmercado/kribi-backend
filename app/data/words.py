@@ -16,8 +16,18 @@ def get_word_by_id(session: SessionDep, word_id: str) -> Word:
 def get_word(session: SessionDep, word: str) -> Word:
 	return session.exec(select(Word).where(Word.word == word, Word.deleted == False)).one()
 
-def get_all_words_from_letter(session: SessionDep, letter: str):
-	return session.exec(select(Word).where(Word.word.startswith(letter), Word.deleted == False)).all()
+def get_all_words_from_letter(session: SessionDep, letter: str, page: int, limit: int):
+  query = (
+    select(Word)
+    .where(
+      Word.word.startswith(letter),
+      Word.deleted == False
+    )
+    .order_by(Word.word)
+    .offset((page - 1) * limit)
+    .limit(limit)
+  )
+  return session.exec(query).all()
 
 def get_all_words_from_search(session: SessionDep, subs: str):
 	return session.exec(

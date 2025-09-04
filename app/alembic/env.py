@@ -7,6 +7,7 @@ from alembic import context
 
 from model.word import Word
 from model.user import User
+from model.article import Article
 from sqlmodel import SQLModel
 
 # this is the Alembic Config object, which provides

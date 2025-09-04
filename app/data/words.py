@@ -5,7 +5,6 @@ from fastapi import exceptions
 from datetime import datetime
 from sqlalchemy.orm import load_only 
 from model.user import User
-from utils.words import transform_word_to_regexp
 
 def get_word_by_id(session: SessionDep, word_id: str) -> Word: 
 	return session.exec(
@@ -24,7 +23,7 @@ def get_all_words_from_search(session: SessionDep, subs: str):
 	return session.exec(
   	select(Word)
    	.where(
-			Word.word.op('~')(transform_word_to_regexp(subs)),
+			Word.word.op('~')(subs),
       Word.deleted == False
     )
   ).all()

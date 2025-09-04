@@ -9,7 +9,6 @@ from dependencies.auth import (
   CreateWordRequired, 
   EditWordRequired, 
   DeleteWordRequired,
-  WordAdminRequired
 )
 
 router = APIRouter(
@@ -17,28 +16,24 @@ router = APIRouter(
   tags=["words"]
 )
 
-# Public endpoints (no authentication required)
+# Public
 @router.get("/id/{word_id}")
 def get_word_by_id(session: SessionDep, word_id: int):
-  """Get word by ID - Public access"""
   return words.get_word_by_id(session, word_id)
 
 @router.get("/{word}")
 def get_word(session: SessionDep, word: Annotated[str, Path(min_length=1)]):
-  """Get word by name - Public access"""
   return words.get_word(session, word)
 
 @router.get("/filter/{letter}")
 def get_filtered_words_by_letter(session: SessionDep, letter: Annotated[str, Path(max_length=2)]):
-  """Get words filtered by letter - Public access"""
   return words.get_all_words_from_letter(session, letter)
 
 @router.get("/search/{substring}")
 def search_words(session: SessionDep, substring: Annotated[str, Path(min_length=3)]):
-  """Search words by substring - Public access"""
   return words.search_words(session, substring)
 
-# Protected endpoints (authentication + specific permissions required)
+# Private endpoints
 @router.post("/", dependencies=[CreateWordRequired])
 def create_word(
   session: SessionDep, 
@@ -46,7 +41,7 @@ def create_word(
   current_user: User = Depends(get_current_active_user)
 ):
   """Create a new word - Requires CREATE_WORD entitlement or admin role"""
-  return words.create_word(session, word)
+  return words.create_word(session, word, current_user)
 
 @router.put("/{word_id}", dependencies=[EditWordRequired])
 def update_word(

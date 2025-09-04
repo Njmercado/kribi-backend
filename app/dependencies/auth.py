@@ -42,7 +42,6 @@ def require_entitlements(required_entitlements: List[Entitlement]) -> Callable:
   """Dependency factory to check if user has required entitlements."""
   def entitlement_checker(current_user: User = Depends(get_current_active_user)) -> User:
     user_entitlements = [Entitlement(ent) for ent in current_user.entitlements] if current_user.entitlements else []
-    
     # Super admins have all entitlements
     if current_user.role == Role.SUPER_ADMIN:
       return current_user
@@ -73,14 +72,21 @@ def require_article_admin() -> Callable:
   """Dependency to check if user is an article admin or super admin."""
   return require_roles([Role.SUPER_ADMIN, Role.ARTICLE_ADMIN])
 
-# Pre-built dependencies for common use cases
 AdminRequired = Depends(require_admin())
 SuperAdminRequired = Depends(require_super_admin())
 WordAdminRequired = Depends(require_word_admin())
 ArticleAdminRequired = Depends(require_article_admin())
 
-# Entitlement-based dependencies
 CreateWordRequired = Depends(require_entitlements([Entitlement.CREATE_WORD]))
 EditWordRequired = Depends(require_entitlements([Entitlement.EDIT_WORD]))
 DeleteWordRequired = Depends(require_entitlements([Entitlement.DELETE_WORD]))
 ViewWordRequired = Depends(require_entitlements([Entitlement.VIEW_WORD]))
+CreateArticleRequired = Depends(require_entitlements([Entitlement.CREATE_ARTICLE]))
+EditArticleRequired = Depends(require_entitlements([Entitlement.EDIT_ARTICLE]))
+DeleteArticleRequired = Depends(require_entitlements([Entitlement.DELETE_ARTICLE]))
+ViewArticleRequired = Depends(require_entitlements([Entitlement.VIEW_ARTICLE]))
+CreateUserRequired = Depends(require_entitlements([Entitlement.CREATE_USER]))
+DeleteUserRequired = Depends(require_entitlements([Entitlement.DELETE_USER]))
+ViewUserRequired = Depends(require_entitlements([Entitlement.VIEW_USER]))
+UpdateUserRequired = Depends(require_entitlements([Entitlement.UPDATE_USER]))
+RestoreUserRequired = Depends(require_entitlements([Entitlement.RESTORE_USER]))

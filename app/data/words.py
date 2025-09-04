@@ -1,9 +1,11 @@
 from db import SessionDep
 from model.word import Word
-from sqlmodel import select, func
+from sqlmodel import select
 from fastapi import exceptions
 from datetime import datetime
 from sqlalchemy.orm import load_only 
+from model.user import User
+from utils.words import transform_word_to_regexp
 
 def get_word_by_id(session: SessionDep, word_id: str) -> Word: 
 	return session.exec(
@@ -18,13 +20,11 @@ def get_word(session: SessionDep, word: str) -> Word:
 def get_all_words_from_letter(session: SessionDep, letter: str):
 	return session.exec(select(Word).where(Word.word.startswith(letter), Word.deleted == False)).all()
 
-def get_all_words_from_search(session: SessionDep, substring: str):
+def get_all_words_from_search(session: SessionDep, subs: str):
 	return session.exec(
   	select(Word)
    	.where(
-      func
-      	.upper(Word.word)
-       	.contains(substring.upper()),
+			Word.word.op('~')(transform_word_to_regexp(subs)),
       Word.deleted == False
     )
   ).all()
@@ -38,8 +38,10 @@ def delete_word(session: SessionDep, word_id: int):
 	else:
 		raise exceptions.ValidationException("Word not found")
 
-def create_word(session: SessionDep, word: Word):
+def create_word(session: SessionDep, word: Word, user: User):
 	if not session.exec(select(Word).where(Word.word == word.word)).first():
+		word.created_by = user.id
+		word.updated_by = user.id
 		session.add(word)
 		session.commit()
 	else:

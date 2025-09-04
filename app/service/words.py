@@ -1,3 +1,4 @@
+from model.user import User
 from data import words
 from db import SessionDep
 from fastapi import exceptions, Response, HTTPException
@@ -43,9 +44,9 @@ def delete_word(session: SessionDep, word_id: int):
 		print('Exception: ', e)
 		return HTTPException(status_code=400, detail=f"Error deleting word: {e}")
 
-def create_word(session: SessionDep, word: Word):
+def create_word(session: SessionDep, word: Word, user: User):
 	try:
-		words.create_word(session, word)
+		words.create_word(session, word, user)
 		return responses.WORD_CREATED_SUCCESSFULLY(word.word)
 	except exceptions.ValidationException as e:
 		print('Exception: ', e)

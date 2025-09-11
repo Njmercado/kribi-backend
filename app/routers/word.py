@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path, Body
+from fastapi import APIRouter, Depends, Path, Body, Query
 from service import words
 from db import SessionDep
 from typing import Annotated
@@ -21,10 +21,6 @@ router = APIRouter(
 def get_word_by_id(session: SessionDep, word_id: int):
   return words.get_word_by_id(session, word_id)
 
-@router.get("/{word}")
-def get_word(session: SessionDep, word: Annotated[str, Path(min_length=1)]):
-  return words.get_word(session, word)
-
 @router.get("/filter/{letter}")
 def get_filtered_words_by_letter(
   session: SessionDep, 
@@ -35,9 +31,14 @@ def get_filtered_words_by_letter(
   """Get words filtered by letter with pagination - Public access"""
   return words.get_all_words_from_letter(session, letter, page, limit)
 
-@router.get("/search/{substring}")
-def search_words(session: SessionDep, substring: Annotated[str, Path(min_length=3)]):
-  return words.search_words(session, substring)
+@router.get("/search")
+def search_words(session: SessionDep, word: Annotated[str, Query(min_length=3, description="Search term")]):
+  """Search words by substring or exact match - Public access"""
+  return words.search_words(session, word)
+
+@router.get("/{word}")
+def get_word(session: SessionDep, word: Annotated[str, Path(min_length=1)]):
+  return words.get_word(session, word)
 
 # Private endpoints
 @router.post("/", dependencies=[CreateWordRequired])

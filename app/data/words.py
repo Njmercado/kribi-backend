@@ -5,12 +5,14 @@ from fastapi import exceptions
 from datetime import datetime
 from sqlalchemy.orm import load_only 
 from model.user import User
+from sqlalchemy import func
 
+# TODO: adjust this logic because this should be using a DTO model instead instead of of the load_only
 def get_word_by_id(session: SessionDep, word_id: str) -> Word: 
 	return session.exec(
 		select(Word)
   	.where(Word.id == word_id, Word.deleted == False)
-		.options(load_only(Word.word, Word.definitions, Word.translations, Word.type))
+		.options(load_only(Word.word, Word.definitions, Word.translations, Word.examples, Word.type))
 	).first()
 
 def get_word(session: SessionDep, word: str) -> Word:
@@ -29,11 +31,11 @@ def get_all_words_from_letter(session: SessionDep, letter: str, page: int, limit
   )
   return session.exec(query).all()
 
-def get_all_words_from_search(session: SessionDep, subs: str):
+def get_all_words_from_search(session: SessionDep, regex_subs: str):
 	return session.exec(
   	select(Word)
    	.where(
-			Word.word.op('~')(subs),
+			func.lower(Word.word).op("~")(regex_subs),
       Word.deleted == False
     )
   ).all()
@@ -63,6 +65,7 @@ def update_word(session: SessionDep, word_id: int, word: Word):
 		found_word.definitions = word.definitions or found_word.definitions
 		found_word.type = word.type or found_word.type
 		found_word.translations = word.translations or found_word.translations
+		found_word.examples = word.examples or found_word.examples
 		found_word.updated_at = datetime.now()
 		session.add(found_word)
 		session.commit()

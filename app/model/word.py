@@ -176,6 +176,7 @@ class Word(SQLModel, table=True):
 	updated_at: datetime = Field(default_factory=datetime.now)
 	definitions: list[str] = Field(default=None, sa_column=Column(ARRAY(String), server_default='{}'))
 	translations: list[str] = Field(default=None, sa_column=Column(ARRAY(String), server_default='{}'))
+	examples: list[str] = Field(default=None, sa_column=Column(ARRAY(String), server_default='{}'))
 	deleted: bool = Field(default=False)
 	created_by: int = Field(default=None, foreign_key="user.id", nullable=True)
 	updated_by: int = Field(default=None, foreign_key="user.id", nullable=True)

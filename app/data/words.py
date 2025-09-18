@@ -40,10 +40,12 @@ def get_all_words_from_search(session: SessionDep, regex_subs: str):
     )
   ).all()
 
-def delete_word(session: SessionDep, word_id: int):
+def delete_word(session: SessionDep, word_id: int, user_id: int):
 	found_word = session.exec(select(Word).where(Word.id == word_id, Word.deleted == False)).first()
 	if found_word:
 		found_word.deleted = True
+		found_word.updated_by = user_id
+		found_word.updated_at = datetime.now()
 		session.add(found_word)
 		session.commit()
 	else:

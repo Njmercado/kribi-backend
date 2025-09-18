@@ -30,9 +30,9 @@ def search_words(session: SessionDep, substring: str):
 	except Exception as e:
 		raise HTTPException(status_code=404, detail="Words not found")
 
-def delete_word(session: SessionDep, word_id: int):
+def delete_word(session: SessionDep, word_id: int, user_id: int):
 	try:
-		words.delete_word(session, word_id)
+		words.delete_word(session, word_id, user_id)
 		return responses.WORD_DELETED_SUCCESSFULLY(word_id)
 	except exceptions.ValidationException as e:
 		return HTTPException(status_code=404, detail=str(e))

@@ -44,7 +44,7 @@ def get_word(session: SessionDep, word: Annotated[str, Path(min_length=1)]):
 @router.post("/", dependencies=[CreateWordRequired])
 def create_word(
   session: SessionDep, 
-  word: Annotated[Word, Body(embed=True)],
+  word: Annotated[Word, Body()],
   current_user: User = Depends(get_current_active_user)
 ):
   """Create a new word - Requires CREATE_WORD entitlement or admin role"""
@@ -54,7 +54,7 @@ def create_word(
 def update_word(
   session: SessionDep, 
   word_id: int, 
-  word: Annotated[Word, Body(embed=True)],
+  word: Annotated[Word, Body()],
   current_user: User = Depends(get_current_active_user)
 ):
   """Update an existing word - Requires EDIT_WORD entitlement or admin role"""
@@ -67,4 +67,4 @@ def delete_word(
   current_user: User = Depends(get_current_active_user)
 ):
   """Delete a word - Requires DELETE_WORD entitlement or admin role"""
-  return words.delete_word(session, word_id)
+  return words.delete_word(session, word_id, current_user.id)

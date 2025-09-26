@@ -1,16 +1,20 @@
+import os
 from fastapi import FastAPI
 from internal import admin
 from routers import word, articles, users, auth
 from contextlib import asynccontextmanager
 from db import create_db_and_tables
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 
 origins = [
   "http://localhost",
   "http://localhost:5173",
-  "http://localhost:3000",
+  os.getenv("FRONTEND_URL", "http://localhost:3000")
 ]
 
 app.add_middleware(

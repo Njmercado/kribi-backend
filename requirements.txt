@@ -9,3 +9,4 @@ passlib[bcrypt]
 python-multipart
 supabase
 python-dotenv
+bcrypt==4.0.1

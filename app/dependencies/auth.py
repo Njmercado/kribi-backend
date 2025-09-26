@@ -1,22 +1,30 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status, Request
 from service.auth import verify_token
 from data.users import get_user_by_email
 from db import SessionDep
 from model.user import User, Role, Entitlement
-from typing import List, Callable
+from typing import List, Callable, Optional
 
-# OAuth2 scheme for token extraction
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+def get_token_from_cookie(request: Request) -> Optional[str]:
+  """Extract JWT token from httpOnly cookie."""
+  return request.cookies.get("access_token")
 
-async def get_current_active_user(session: SessionDep, token: str = Depends(oauth2_scheme)) -> User:
-  """Get current active user from JWT Token"""
+async def get_current_active_user(session: SessionDep, request: Request) -> User:
+  """Get current active user from JWT Token stored in httpOnly cookie"""
 
   credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Could not validate credentials",
     headers={"WWW-Authenticate": "Bearer"},
   )
+
+  token = get_token_from_cookie(request)
+  if not token:
+    raise HTTPException(
+      status_code=status.HTTP_401_UNAUTHORIZED,
+      detail="Authentication token not found",
+      headers={"WWW-Authenticate": "Bearer"},
+    )
 
   token_data = verify_token(token)
   user = get_user_by_email(session, email=token_data.email)
@@ -72,11 +80,13 @@ def require_article_admin() -> Callable:
   """Dependency to check if user is an article admin or super admin."""
   return require_roles([Role.SUPER_ADMIN, Role.ARTICLE_ADMIN])
 
+# Pre-built dependencies for common use cases
 AdminRequired = Depends(require_admin())
 SuperAdminRequired = Depends(require_super_admin())
 WordAdminRequired = Depends(require_word_admin())
 ArticleAdminRequired = Depends(require_article_admin())
 
+# Entitlement-based dependencies
 CreateWordRequired = Depends(require_entitlements([Entitlement.CREATE_WORD]))
 EditWordRequired = Depends(require_entitlements([Entitlement.EDIT_WORD]))
 DeleteWordRequired = Depends(require_entitlements([Entitlement.DELETE_WORD]))

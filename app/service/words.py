@@ -33,7 +33,7 @@ def search_words(session: SessionDep, substring: str):
 def delete_word(session: SessionDep, word_id: int, user_id: int):
 	try:
 		words.delete_word(session, word_id, user_id)
-		return responses.WORD_DELETED_SUCCESSFULLY(word_id)
+		return responses.WORD_DELETED_SUCCESSFULLY()
 	except exceptions.ValidationException as e:
 		return HTTPException(status_code=404, detail=str(e))
 	except Exception as e:

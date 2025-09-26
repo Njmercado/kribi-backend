@@ -8,12 +8,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 crypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+ADMIN_EMAIL = os.getenv("SUPER_ADMIN_EMAIL", "admin@example.com")
 ADMIN_PASSWORD = os.getenv("SUPER_ADMIN_PASSWORD", "admin123")
 
 def create_admin_users():
   with Session(engine) as session:
     user = User(
-      email="njesusmercado@gmail.com",
+      email=ADMIN_EMAIL,
       username="admin",
       hashed_password=crypt_context.hash(ADMIN_PASSWORD),
       name="Admin",

@@ -1,6 +1,6 @@
 from db import SessionDep
 from model.word import Word
-from sqlmodel import select, or_, exists
+from sqlmodel import select, or_
 from fastapi import exceptions
 from datetime import datetime
 from sqlalchemy.orm import load_only 

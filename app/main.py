@@ -13,8 +13,8 @@ app = FastAPI()
 
 origins = [
   "http://localhost",
-  "http://localhost:5173",
-  os.getenv("FRONTEND_URL", "http://localhost:3000")
+  os.getenv("ADMIN_FRONTEND_URL", "http://localhost:3000"),
+  os.getenv("FRONTEND_URL", "http://localhost:5173"),
 ]
 
 app.add_middleware(

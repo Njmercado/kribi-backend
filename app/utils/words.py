@@ -24,12 +24,21 @@ def transform_word_to_regexp(word: str) -> str:
 		'ú': '(u|ù|ú|ü)',
 		'ü': '(u|ù|ú|ü)',
 		'n': '(n|ñ)',
-		'c': '(c|k|q)',
+		'c': '(c|k|q|s)',
 		'k': '(c|k|q)',
 		'q': '(c|k|q)',
 		'y': '(y|j|ll)',
 		'j': '(y|j|ll)',
 		'll': '(y|j|ll)',
+		'n': '(n|ñ)',
+		'ñ': '(n|ñ)',
+		's': '(s|z|x|c)',
+		'z': '(s|z|x|c)',
+		'x': '(s|z|x|c)',
+		'w': '(w|g)',
+		'g': '(w|g)',
+		'v': '(v|b)',
+		'b': '(v|b)',
 	}
 
 	return ''.join(accent_mapping.get(char) or char for char in word.lower())

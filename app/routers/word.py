@@ -36,6 +36,11 @@ def search_words(session: SessionDep, word: Annotated[str, Query(min_length=3, d
   """Search words by substring or exact match - Public access"""
   return words.search_words(session, word)
 
+@router.get("/random")
+def get_random_words(session: SessionDep, quantity: int = Query(1, ge=1, le=10)):
+  """Get a random word - Public access"""
+  return words.get_random_words(session, quantity)
+
 @router.get("/{word}")
 def get_word(session: SessionDep, word: Annotated[str, Path(min_length=1)]):
   return words.get_word(session, word)

@@ -28,7 +28,7 @@ def search_words(session: SessionDep, substring: str):
 	try:
 		return words.get_all_words_from_search(session, transform_word_to_regexp(substring))
 	except Exception as e:
-		raise HTTPException(status_code=404, detail="Words not found")
+		raise HTTPException(status_code=404, detail="Could not find any matching words")
 
 def delete_word(session: SessionDep, word_id: int, user_id: int):
 	try:
@@ -52,3 +52,9 @@ def update_word(session: SessionDep, word_id: int, word: Word):
 		return Response(status_code=200, content=f"Word '{response.word}' updated successfully :)")
 	except exceptions.ValidationException as e:
 		raise HTTPException(status_code=400, detail=str(e))
+
+def get_random_words(session: SessionDep, quantity: int):
+	try:
+		return words.get_random_words(session, quantity)
+	except Exception as e:
+		raise HTTPException(status_code=404, detail="Could not retrieve random word(s)")

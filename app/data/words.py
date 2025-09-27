@@ -1,13 +1,13 @@
 from db import SessionDep
 from model.word import Word
-from sqlmodel import select
+from sqlmodel import select, or_, exists
 from fastapi import exceptions
 from datetime import datetime
 from sqlalchemy.orm import load_only 
 from model.user import User
 from sqlalchemy import func
 
-# TODO: adjust this logic because this should be using a DTO model instead instead of of the load_only
+# TODO: adjust this logic because this should be using a DTO model instead of of the load_only
 def get_word_by_id(session: SessionDep, word_id: str) -> Word: 
 	return session.exec(
 		select(Word)
@@ -32,10 +32,19 @@ def get_all_words_from_letter(session: SessionDep, letter: str, page: int, limit
   return session.exec(query).all()
 
 def get_all_words_from_search(session: SessionDep, regex_subs: str):
-	return session.exec(
+  return session.exec(
   	select(Word)
-   	.where(
-			func.lower(Word.word).op("~")(regex_subs),
+  	.where(
+			or_(
+				# Search in word name using regex
+				func.lower(Word.word).op("~")(regex_subs),
+				# Search in translations array - convert to text and use regex
+				func.lower(func.array_to_string(Word.translations, '|')).op("~")(regex_subs),
+				# Search in examples array - convert to text and use regex
+				func.lower(func.array_to_string(Word.examples, '|')).op("~")(regex_subs),
+				# Search in definitions array - convert to text and use regex
+				func.lower(func.array_to_string(Word.definitions, '|')).op("~")(regex_subs),
+			),
       Word.deleted == False
     )
   ).all()
@@ -74,3 +83,11 @@ def update_word(session: SessionDep, word_id: int, word: Word):
 		return found_word
 	else:
 		raise exceptions.ValidationException("Word not found")
+
+def get_random_words(session: SessionDep, quantity: int):
+	return session.exec(
+		select(Word)
+		.where(Word.deleted == False)
+		.order_by(func.random())
+		.limit(quantity)
+	).all()

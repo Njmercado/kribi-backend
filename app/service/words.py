@@ -5,6 +5,7 @@ from fastapi import exceptions, Response, HTTPException
 from model.word import Word
 from utils import responses
 from utils.words import transform_word_to_regexp
+from utils.logger import log
 
 def get_word(session: SessionDep, word: str):
 	try:
@@ -28,6 +29,7 @@ def search_words(session: SessionDep, substring: str):
 	try:
 		return words.get_all_words_from_search(session, transform_word_to_regexp(substring))
 	except Exception as e:
+		log(f"Search failed: {str(e)}")
 		raise HTTPException(status_code=404, detail="Could not find any matching words")
 
 def delete_word(session: SessionDep, word_id: int, user_id: int):

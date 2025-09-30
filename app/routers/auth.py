@@ -5,6 +5,7 @@ from service import auth
 from model.auth import Token
 from model.user import User
 from dependencies.auth import get_current_active_user
+from utils.logger import log
 
 router = APIRouter(
   prefix="/auth",
@@ -31,13 +32,13 @@ def login(
       max_age=30 * 60,  # 30 minutes (same as token expiry)
       path="/"
     )
-    
-    return {"message": "Login successful", "token_type": token.token_type}
-  except HTTPException:
-    raise
+
+    # return {"message": "Login successful", "token_type": token.token_type}
+    return response
   except Exception as e:
+    log(f"Login failed: {str(e)}")
     raise HTTPException(
-      status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+      status_code=status.HTTP_404_NOT_FOUND,
       detail="Login failed"
     )
 

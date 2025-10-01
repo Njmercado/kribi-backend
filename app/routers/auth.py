@@ -33,8 +33,7 @@ def login(
       path="/"
     )
 
-    # return {"message": "Login successful", "token_type": token.token_type}
-    return response
+    return {"message": "Login successful", "token_type": token.token_type}
   except Exception as e:
     log(f"Login failed: {str(e)}")
     raise HTTPException(

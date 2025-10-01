@@ -3,13 +3,27 @@ from fastapi import FastAPI
 from internal import admin
 from routers import word, articles, users, auth
 from contextlib import asynccontextmanager
-from db import create_db_and_tables
+from db import create_db_and_tables, close_db_connections, get_connection_info
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+  # Startup
+  print("Application is starting...")
+  create_db_and_tables()
+  print("Database tables created/verified")
+
+  yield 
+
+  # Shutdown
+  print("Application is shutting down...")
+  close_db_connections()
+  print("Database connections closed")
+
+app = FastAPI(lifespan=lifespan)
 
 origins = [
   "http://localhost",
@@ -31,11 +45,11 @@ app.include_router(admin.router)
 app.include_router(auth.router)
 app.include_router(users.router)
 
-@asynccontextmanager
-def lifespan(app: FastAPI):
-  print("Application is starting...")
-  create_db_and_tables()
-
 @app.get("/")
 def read_root():
   return {"message": "Hello, from Kribi!"}
+
+@app.get("/health/db")
+def database_health():
+  """Check database connection pool health."""
+  return get_connection_info()

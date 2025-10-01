@@ -14,8 +14,15 @@ POSTGRES_DB = os.getenv("POSTGRES_DB", "kribi")
 
 DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
-# SQLModel setup
-engine = create_engine(DATABASE_URL)
+# SQLModel setup with optimized connection pool configuration
+engine = create_engine(
+  DATABASE_URL,
+  pool_size=5,           # Base connections (sufficient for single API instance)
+  max_overflow=10,       # Extra connections during high load (total max: 15)
+  pool_timeout=20,       # Seconds to wait for connection (fail fast)
+  pool_recycle=3600,     # Recreate connections every hour (prevents stale connections)
+  pool_pre_ping=True     # Test connections before use (prevents connection errors)
+)
 
 # Dependency to get database session
 def get_session():
@@ -24,5 +31,21 @@ def get_session():
 
 def create_db_and_tables():
   SQLModel.metadata.create_all(engine)
+
+def close_db_connections():
+  """Close all database connections and dispose of the engine."""
+  engine.dispose()
+
+def get_connection_info():
+  """Get current connection pool information."""
+  pool = engine.pool
+  return {
+    "pool_size": pool.size(),           # Total connections currently in the pool
+    "checked_in": pool.checkedin(),     # Available/idle connections ready to use
+    "checked_out": pool.checkedout(),   # Active connections currently being used
+    "overflow": pool.overflow(),        # Extra connections beyond base pool_size
+    "total_max": pool.size() + pool.overflow(),  # Maximum possible connections
+    "utilization": f"{pool.checkedout()}/{pool.size() + pool.overflow()}"  # Usage ratio
+  }
 
 SessionDep = Annotated[Session, Depends(get_session)]

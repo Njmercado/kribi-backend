@@ -13,8 +13,6 @@ load_dotenv()
 async def lifespan(app: FastAPI):
   # Startup
   print("Application is starting...")
-  create_db_and_tables()
-  print("Database tables created/verified")
 
   yield 
 

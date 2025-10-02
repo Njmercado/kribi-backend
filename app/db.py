@@ -17,8 +17,8 @@ DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST
 # SQLModel setup with optimized connection pool configuration
 engine = create_engine(
   DATABASE_URL,
-  pool_size=5,           # Base connections (sufficient for single API instance)
-  max_overflow=10,       # Extra connections during high load (total max: 15)
+  pool_size=2,           # Base connections (sufficient for single API instance)
+  max_overflow=3,       # Extra connections during high load (total max: 5)
   pool_timeout=20,       # Seconds to wait for connection (fail fast)
   pool_recycle=3600,     # Recreate connections every hour (prevents stale connections)
   pool_pre_ping=True     # Test connections before use (prevents connection errors)

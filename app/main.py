@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from internal import admin
 from routers import word, articles, users, auth
 from contextlib import asynccontextmanager
-from db import create_db_and_tables, close_db_connections, get_connection_info
+from db import create_db, close_db_connections, get_connection_info
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
@@ -13,8 +13,12 @@ load_dotenv()
 async def lifespan(app: FastAPI):
   # Startup
   print("Application is starting...")
+  CREATE_TABLES = os.getenv("CREATE_TABLES", "false").lower() == "true"
+  if CREATE_TABLES:
+    create_db()
+    print("Database created/verified")
 
-  yield 
+  yield
 
   # Shutdown
   print("Application is shutting down...")

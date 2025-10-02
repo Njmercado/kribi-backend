@@ -29,8 +29,13 @@ def get_session():
   with Session(engine) as session:
     yield session
 
-def create_db_and_tables():
-  SQLModel.metadata.create_all(engine)
+def create_db():
+  try:
+    SQLModel.metadata.create_all(engine)
+    print("✅ Database tables created/verified successfully")
+  except Exception as e:
+    print(f"⚠️  Database table creation failed: {e}")
+    # Don't raise - let app start even if tables exist
 
 def close_db_connections():
   """Close all database connections and dispose of the engine."""

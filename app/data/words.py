@@ -22,7 +22,7 @@ def get_all_words_from_letter(session: SessionDep, letter: str, page: int, limit
   query = (
     select(Word)
     .where(
-      Word.word.startswith(letter),
+			func.lower(Word.word).startswith(letter.lower()),
       Word.deleted == False
     )
     .order_by(Word.word)

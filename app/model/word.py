@@ -1,6 +1,7 @@
 from sqlmodel import SQLModel, Field, Column, ARRAY, String
 from datetime import datetime
 from enum import Enum
+from pydantic import BaseModel
 
 # WordType dictionary with original CSV keys and English uppercase underscore values
 WORD_TYPES = {
@@ -181,3 +182,7 @@ class Word(SQLModel, table=True):
 	created_by: int = Field(default=None, foreign_key="user.id", nullable=True)
 	updated_by: int = Field(default=None, foreign_key="user.id", nullable=True)
 	type: WordType = Field(default=WordType.NONE)
+
+class WordDTO(BaseModel):
+  words: list[Word]
+  has_next_page: bool

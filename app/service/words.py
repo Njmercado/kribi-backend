@@ -21,7 +21,11 @@ def get_all_words_from_letter(session: SessionDep, letter: str, page: int, limit
 
 def search_words(session: SessionDep, substring: str, page: int, limit: int):
 	try:
-		return words.get_all_words_from_search(session, transform_word_to_regexp(substring), page, limit)
+		results = words.get_all_words_from_search(session, transform_word_to_regexp(substring), page, limit)
+		return {
+			"words": results[0],
+			"has_next_page": results[1]
+		}
 	except Exception as e:
 		log(f"Search failed: {str(e)}")
 		raise HTTPException(status_code=404, detail="Could not find any matching words")

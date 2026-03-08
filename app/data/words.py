@@ -29,24 +29,31 @@ def get_all_words_from_letter(session: SessionDep, letter: str, page: int, limit
   return session.exec(query).all()
 
 def get_all_words_from_search(session: SessionDep, regex_subs: str, page: int, limit: int):
-  return session.exec(
+	search_filters = or_(
+		# Search in word name using regex
+		func.lower(Word.word).op("~")(regex_subs),
+		# Search in translations array - convert to text and use regex
+		func.lower(func.array_to_string(Word.translations, '|')).op("~")(regex_subs),
+		# Search in examples array - convert to text and use regex
+		func.lower(func.array_to_string(Word.examples, '|')).op("~")(regex_subs),
+		# Search in definitions array - convert to text and use regex
+		func.lower(func.array_to_string(Word.definitions, '|')).op("~")(regex_subs),
+	)
+
+	results = session.exec(
   	select(Word)
   	.where(
-			or_(
-				# Search in word name using regex
-				func.lower(Word.word).op("~")(regex_subs),
-				# Search in translations array - convert to text and use regex
-				func.lower(func.array_to_string(Word.translations, '|')).op("~")(regex_subs),
-				# Search in examples array - convert to text and use regex
-				func.lower(func.array_to_string(Word.examples, '|')).op("~")(regex_subs),
-				# Search in definitions array - convert to text and use regex
-				func.lower(func.array_to_string(Word.definitions, '|')).op("~")(regex_subs),
-			),
+			search_filters,
       Word.deleted == False
     )
    	.offset((page - 1) * limit)
-    .limit(limit)
+    .limit(limit + 1)  # Fetch one extra to check if there's a next page
   ).all()
+
+	has_next_page = len(results) > limit
+	words = results[:limit]  # Return only the requested number of results
+
+	return words, has_next_page
 
 def delete_word(session: SessionDep, word_id: int, user_id: int):
 	found_word = session.exec(select(Word).where(Word.id == word_id, Word.deleted == False)).first()

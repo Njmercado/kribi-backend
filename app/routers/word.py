@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Path, Body, Query
 from service import words
 from db import SessionDep
 from typing import Annotated
-from model.word import Word
+from model.word import Word, WordDTO
 from model.user import User
 from dependencies.auth import (
   get_current_active_user, 
@@ -31,7 +31,7 @@ def get_filtered_words_by_letter(
   """Get words filtered by letter with pagination - Public access"""
   return words.get_all_words_from_letter(session, letter, page, limit)
 
-@router.get("/search")
+@router.get("/search", response_model=WordDTO)
 def search_words(
   session: SessionDep,
   word: Annotated[str, Query(description="Search term")],

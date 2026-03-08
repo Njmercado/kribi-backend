@@ -7,12 +7,6 @@ from utils import responses
 from utils.words import transform_word_to_regexp
 from utils.logger import log
 
-def get_word(session: SessionDep, word: str):
-	try:
-		return words.get_word(session, word)
-	except Exception as e:
-		raise HTTPException(status_code=404, detail="Word not found")
-
 def get_word_by_id(session: SessionDep, word_id: int):
 	try:
 		return words.get_word_by_id(session, word_id)
@@ -25,9 +19,9 @@ def get_all_words_from_letter(session: SessionDep, letter: str, page: int, limit
 	except Exception as e:
 		raise HTTPException(status_code=404, detail="Words not found")
 
-def search_words(session: SessionDep, substring: str):
+def search_words(session: SessionDep, substring: str, page: int, limit: int):
 	try:
-		return words.get_all_words_from_search(session, transform_word_to_regexp(substring))
+		return words.get_all_words_from_search(session, transform_word_to_regexp(substring), page, limit)
 	except Exception as e:
 		log(f"Search failed: {str(e)}")
 		raise HTTPException(status_code=404, detail="Could not find any matching words")

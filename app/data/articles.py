@@ -2,6 +2,7 @@ from db import SessionDep
 from model.article import Article, ArticleDTO, CreateArticle, CreatedArticle
 from datetime import datetime
 from model.user import User
+from sqlmodel import select, or_
 
 def get_article_by_id(session: SessionDep, article_id: int) -> ArticleDTO:
   return ArticleDTO.model_validate(
@@ -12,10 +13,10 @@ def get_article_by_id(session: SessionDep, article_id: int) -> ArticleDTO:
   )
 
 def get_articles_by_name(session: SessionDep, name: str) -> list[ArticleDTO]:
-  articles = session \
-    .select(Article) \
-    .where(Article.title.ilike(f"%{name}%")) \
-    .all()
+  articles = session.exec(
+    select(Article)
+    .where(Article.title.ilike(f"%{name}%"), Article.deleted == False)
+  ).all()
   return [ArticleDTO.model_validate(article) for article in articles]
 
 def create_article(session: SessionDep, current_user: User, article: CreateArticle) -> CreatedArticle:

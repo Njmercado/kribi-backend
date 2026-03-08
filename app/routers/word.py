@@ -32,18 +32,19 @@ def get_filtered_words_by_letter(
   return words.get_all_words_from_letter(session, letter, page, limit)
 
 @router.get("/search")
-def search_words(session: SessionDep, word: Annotated[str, Query(min_length=3, description="Search term")]):
+def search_words(
+  session: SessionDep,
+  word: Annotated[str, Query(description="Search term")],
+  page: Annotated[int, Query(ge=1, description="Page number")] = 1, 
+  limit: Annotated[int, Query(ge=1, le=100, description="Number of results per page")] = 10
+):
   """Search words by substring or exact match - Public access"""
-  return words.search_words(session, word)
+  return words.search_words(session, word, page, limit)
 
 @router.get("/random")
 def get_random_words(session: SessionDep, quantity: int = Query(1, ge=1, le=10)):
   """Get a random word - Public access"""
   return words.get_random_words(session, quantity)
-
-@router.get("/{word}")
-def get_word(session: SessionDep, word: Annotated[str, Path(min_length=1)]):
-  return words.get_word(session, word)
 
 # Private endpoints
 @router.post("/", dependencies=[CreateWordRequired])

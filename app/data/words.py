@@ -15,9 +15,6 @@ def get_word_by_id(session: SessionDep, word_id: str) -> Word:
 		.options(load_only(Word.word, Word.definitions, Word.translations, Word.examples, Word.type))
 	).first()
 
-def get_word(session: SessionDep, word: str) -> Word:
-	return session.exec(select(Word).where(Word.word == word, Word.deleted == False)).one()
-
 def get_all_words_from_letter(session: SessionDep, letter: str, page: int, limit: int):
   query = (
     select(Word)
@@ -31,7 +28,7 @@ def get_all_words_from_letter(session: SessionDep, letter: str, page: int, limit
   )
   return session.exec(query).all()
 
-def get_all_words_from_search(session: SessionDep, regex_subs: str):
+def get_all_words_from_search(session: SessionDep, regex_subs: str, page: int, limit: int):
   return session.exec(
   	select(Word)
   	.where(
@@ -47,7 +44,7 @@ def get_all_words_from_search(session: SessionDep, regex_subs: str):
 			),
       Word.deleted == False
     )
-  ).all()
+  ).offset((page - 1) * limit).limit(limit).all()
 
 def delete_word(session: SessionDep, word_id: int, user_id: int):
 	found_word = session.exec(select(Word).where(Word.id == word_id, Word.deleted == False)).first()

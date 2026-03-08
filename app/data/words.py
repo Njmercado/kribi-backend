@@ -44,7 +44,9 @@ def get_all_words_from_search(session: SessionDep, regex_subs: str, page: int, l
 			),
       Word.deleted == False
     )
-  ).offset((page - 1) * limit).limit(limit).all()
+   	.offset((page - 1) * limit)
+    .limit(limit)
+  ).all()
 
 def delete_word(session: SessionDep, word_id: int, user_id: int):
 	found_word = session.exec(select(Word).where(Word.id == word_id, Word.deleted == False)).first()

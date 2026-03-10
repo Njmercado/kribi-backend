@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from sqlmodel import SQLModel, Field, Column, ARRAY, String, Integer
 from datetime import datetime
 
@@ -34,7 +35,7 @@ class CreatedArticle(SQLModel):
   tags: list[str]
   created_at: datetime
 
-class ArticleDTO(SQLModel):
+class ArticleDTO(BaseModel):
 	id: int
 	title: str
 	content: str
@@ -43,9 +44,12 @@ class ArticleDTO(SQLModel):
 	updated_at: datetime
 	authors: list[int]
 	created_by: int
-	updated_by: int
 	public: bool
 	tags: list[str]
+
+class ArticlesDTO(BaseModel):
+	articles: list[ArticleDTO]
+	has_next_page: bool
 
 class UpdateArticle(SQLModel):
 	title: str

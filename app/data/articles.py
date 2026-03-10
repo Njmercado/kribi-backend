@@ -1,23 +1,30 @@
 from db import SessionDep
-from model.article import Article, ArticleDTO, CreateArticle, CreatedArticle
+from model.article import Article, ArticleDTO, ArticlesDTO, CreateArticle, CreatedArticle
 from datetime import datetime
 from model.user import User
 from sqlmodel import select, or_
 
 def get_article_by_id(session: SessionDep, article_id: int) -> ArticleDTO:
-  return ArticleDTO.model_validate(
-    session
-      .select(Article)
-      .where(Article.id == article_id)
-      .first()
-  )
+  return session.exec(
+    select(Article)
+    .where(Article.id == article_id)
+  ).first()
 
-def get_articles_by_name(session: SessionDep, name: str) -> list[ArticleDTO]:
+def get_articles_by_name(session: SessionDep, name: str, page: int, limit: int) -> ArticlesDTO:
   articles = session.exec(
     select(Article)
     .where(Article.title.ilike(f"%{name}%"), Article.deleted == False)
+    .offset((page - 1) * limit)
+    .limit(limit + 1)
   ).all()
-  return [ArticleDTO.model_validate(article) for article in articles]
+
+  has_next_page = len(articles) > limit
+  articles = articles[:limit]
+
+  return {
+    "articles": articles,
+    "has_next_page": has_next_page
+  }
 
 def create_article(session: SessionDep, current_user: User, article: CreateArticle) -> CreatedArticle:
   article_to_create = Article.model_validate(article)
@@ -46,4 +53,3 @@ def delete_article(session: SessionDep, current_user: User, article_id: int):
   existing_article.updated_by = current_user.id
   session.add(existing_article)
   session.commit()
-  return existing_article

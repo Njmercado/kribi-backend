@@ -5,6 +5,24 @@ from db import SessionDep
 from model.user import User, Role, Entitlement
 from typing import List, Callable, Optional
 
+# Maps each entitlement to the admin roles that implicitly have it.
+# SUPER_ADMIN always bypasses all entitlement checks.
+ENTITLEMENT_ROLE_MAP = {
+  Entitlement.EDIT_WORD: [Role.WORD_ADMIN],
+  Entitlement.CREATE_WORD: [Role.WORD_ADMIN],
+  Entitlement.DELETE_WORD: [Role.WORD_ADMIN],
+  Entitlement.VIEW_WORD: [Role.WORD_ADMIN],
+  Entitlement.EDIT_ARTICLE: [Role.ARTICLE_ADMIN],
+  Entitlement.CREATE_ARTICLE: [Role.ARTICLE_ADMIN],
+  Entitlement.DELETE_ARTICLE: [Role.ARTICLE_ADMIN],
+  Entitlement.VIEW_ARTICLE: [Role.ARTICLE_ADMIN],
+  Entitlement.CREATE_USER: [Role.USER_ADMIN],
+  Entitlement.DELETE_USER: [Role.USER_ADMIN],
+  Entitlement.VIEW_USER: [Role.USER_ADMIN],
+  Entitlement.UPDATE_USER: [Role.USER_ADMIN],
+  Entitlement.RESTORE_USER: [Role.USER_ADMIN],
+}
+
 def get_token_from_cookie(request: Request) -> Optional[str]:
   """Extract JWT token from httpOnly cookie."""
   return request.cookies.get("access_token")
@@ -46,16 +64,32 @@ def require_roles(allowed_roles: List[Role]) -> Callable:
     return current_user
   return role_checker
 
-def require_entitlements(required_entitlements: List[Entitlement]) -> Callable:
-  """Dependency factory to check if user has required entitlements."""
-  def entitlement_checker(current_user: User = Depends(get_current_active_user)) -> User:
-    user_entitlements = [Entitlement(ent) for ent in current_user.entitlements] if current_user.entitlements else []
-    # Super admins have all entitlements
-    if current_user.role == Role.SUPER_ADMIN:
-      return current_user
+def is_user_somekind_of_admin(user: User, entitlements: List[Entitlement]) -> bool:
+  # Super admins have all entitlements
+  if user.role == Role.SUPER_ADMIN:
+    return True
     
-    # Check if user has all required entitlements
-    missing_entitlements = [ent for ent in required_entitlements if ent not in user_entitlements]
+  # Check if the user's role implicitly grants all required entitlements
+  bypass_roles = set()
+  for ent in entitlements:
+    bypass_roles.update(ENTITLEMENT_ROLE_MAP.get(ent, []))
+
+  if user.role in bypass_roles:
+    return True
+
+def require_entitlements(required_entitlements: List[Entitlement]) -> Callable:
+  """Dependency factory to check if user has required entitlements.
+  
+  SUPER_ADMIN always bypasses all entitlement checks.
+  Domain admin roles (WORD_ADMIN, ARTICLE_ADMIN, USER_ADMIN) bypass
+  entitlements within their domain automatically.
+  """
+  def entitlement_checker(current_user: User = Depends(get_current_active_user)) -> User:
+    if is_user_somekind_of_admin(current_user, required_entitlements):
+      return current_user
+
+    # Fall back to explicit entitlement check
+    missing_entitlements = [entitlement for entitlement in required_entitlements if entitlement not in current_user.entitlements]
     if missing_entitlements:
       raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
@@ -66,7 +100,7 @@ def require_entitlements(required_entitlements: List[Entitlement]) -> Callable:
 
 def require_admin() -> Callable:
   """Dependency to check if user is an admin (SUPER_ADMIN, WORD_ADMIN, or ARTICLE_ADMIN)."""
-  return require_roles([Role.SUPER_ADMIN, Role.WORD_ADMIN, Role.ARTICLE_ADMIN])
+  return require_roles([Role.SUPER_ADMIN, Role.WORD_ADMIN, Role.ARTICLE_ADMIN, Role.USER_ADMIN])
 
 def require_super_admin() -> Callable:
   """Dependency to check if user is a super admin."""
@@ -80,11 +114,16 @@ def require_article_admin() -> Callable:
   """Dependency to check if user is an article admin or super admin."""
   return require_roles([Role.SUPER_ADMIN, Role.ARTICLE_ADMIN])
 
+def require_user_admin() -> Callable:
+  """Dependency to check if user is a user admin or super admin."""
+  return require_roles([Role.SUPER_ADMIN, Role.USER_ADMIN])
+
 # Pre-built dependencies for common use cases
 AdminRequired = Depends(require_admin())
 SuperAdminRequired = Depends(require_super_admin())
 WordAdminRequired = Depends(require_word_admin())
 ArticleAdminRequired = Depends(require_article_admin())
+UserAdminRequired = Depends(require_user_admin())
 
 # Entitlement-based dependencies
 CreateWordRequired = Depends(require_entitlements([Entitlement.CREATE_WORD]))
@@ -93,6 +132,8 @@ DeleteWordRequired = Depends(require_entitlements([Entitlement.DELETE_WORD]))
 ViewWordRequired = Depends(require_entitlements([Entitlement.VIEW_WORD]))
 CreateArticleRequired = Depends(require_entitlements([Entitlement.CREATE_ARTICLE]))
 EditArticleRequired = Depends(require_entitlements([Entitlement.EDIT_ARTICLE]))
+DeleteArticleRequired = Depends(require_entitlements([Entitlement.DELETE_ARTICLE]))
+ViewArticleRequired = Depends(require_entitlements([Entitlement.VIEW_ARTICLE]))
 DeleteArticleRequired = Depends(require_entitlements([Entitlement.DELETE_ARTICLE]))
 ViewArticleRequired = Depends(require_entitlements([Entitlement.VIEW_ARTICLE]))
 CreateUserRequired = Depends(require_entitlements([Entitlement.CREATE_USER]))

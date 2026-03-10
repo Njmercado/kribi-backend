@@ -1,5 +1,5 @@
-def transform_word_to_regexp(word: str) -> str:
-	"""Transform a word into a regular expression pattern that matches the word with optional accents."""
+def transform_input_to_regexp(word: str) -> str:
+	"""Transform a input string into a regular expression pattern that matches the word with optional accents."""
 
   # Define a mapping of characters to their accented variants
 	accent_mapping = {

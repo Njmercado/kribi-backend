@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from model.article import Article, ArticleDTO, ArticlesDTO, CreateArticle
 from model.user import User
 from fastapi import exceptions
-from utils.responses import ARTICLE_CREATED_SUCCESSFULLY, ARTICLE_DELETED_SUCCESSFULLY, ARTICLE_UPDATED_SUCCESSFULLY
+from utils.responses import ARTICLE_DELETED_SUCCESSFULLY, ARTICLE_UPDATED_SUCCESSFULLY
 from fastapi import Response
 
 def get_article_by_id(session: SessionDep, article_id: int) -> ArticleDTO:

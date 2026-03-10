@@ -75,7 +75,7 @@ def create_word(session: SessionDep, word: Word, user: User):
 	else:
 		raise exceptions.ValidationException("Word already exists")
 
-def update_word(session: SessionDep, word_id: int, word: Word):
+def update_word(session: SessionDep, word_id: int, word: Word, user_id: int):
 	found_word = session.exec(select(Word).where(Word.id == word_id, Word.deleted == False)).first()
 	if found_word:
 		found_word.word = word.word or found_word.word
@@ -84,6 +84,7 @@ def update_word(session: SessionDep, word_id: int, word: Word):
 		found_word.translations = word.translations or found_word.translations
 		found_word.examples = word.examples or found_word.examples
 		found_word.updated_at = datetime.now()
+		found_word.updated_by = user_id
 		session.add(found_word)
 		session.commit()
 		return found_word

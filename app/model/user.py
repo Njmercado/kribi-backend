@@ -1,11 +1,13 @@
+from pydantic import BaseModel
 from sqlmodel import SQLModel, Field, Column, ARRAY, String
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import List, List, Optional
 
 class Role(Enum):
   WORD_ADMIN = 'WORD_ADMIN'
   ARTICLE_ADMIN = 'ARTICLE_ADMIN'
+  USER_ADMIN = 'USER_ADMIN'
   SUPER_ADMIN = 'SUPER_ADMIN'
   EDITOR = 'EDITOR'
   VIEWER = 'VIEWER'
@@ -15,10 +17,12 @@ class Entitlement(Enum):
   CREATE_WORD = 'CREATE_WORD'
   DELETE_WORD = 'DELETE_WORD'
   VIEW_WORD = 'VIEW_WORD'
+  RESTORE_WORD = 'RESTORE_WORD'
   EDIT_ARTICLE = 'EDIT_ARTICLE'
   CREATE_ARTICLE = 'CREATE_ARTICLE'
   DELETE_ARTICLE = 'DELETE_ARTICLE'
   VIEW_ARTICLE = 'VIEW_ARTICLE'
+  RESTORE_ARTICLE = 'RESTORE_ARTICLE'
   CREATE_USER = 'CREATE_USER'
   DELETE_USER = 'DELETE_USER'
   VIEW_USER = 'VIEW_USER'
@@ -68,3 +72,15 @@ class UserResponse(SQLModel):
   is_active: bool
   role: Role
   created_at: datetime
+
+class UserUpdateDTO(BaseModel):
+  id: int
+  email: Optional[str] = None
+  name: Optional[str] = None
+  last_name: Optional[str] = None
+  full_name: Optional[str] = None
+  password: Optional[str] = None
+  role: Optional[Role] = None
+  phone: Optional[str] = None
+  location: Optional[str] = None
+  entitlements: Optional[List[Entitlement]] = None

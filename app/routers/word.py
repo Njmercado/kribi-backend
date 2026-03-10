@@ -64,7 +64,7 @@ def update_word(
   current_user: User = Depends(get_current_active_user)
 ):
   """Update an existing word - Requires EDIT_WORD entitlement or admin role"""
-  return words.update_word(session, word_id, word)
+  return words.update_word(session, word_id, word, current_user.id)
 
 @router.delete("/{word_id}", dependencies=[DeleteWordRequired])
 def delete_word(

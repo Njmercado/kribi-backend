@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Path, Body, Query
 from service import words
 from db import SessionDep
 from typing import Annotated
-from model.word import Word, WordDTO
+from model.word import CreateWordDTO, UpdateWordDTO, WordDTO
 from model.user import User
 from dependencies.auth import (
   get_current_active_user, 
@@ -50,7 +50,7 @@ def get_random_words(session: SessionDep, quantity: int = Query(1, ge=1, le=10))
 @router.post("/", dependencies=[CreateWordRequired])
 def create_word(
   session: SessionDep, 
-  word: Annotated[Word, Body()],
+  word: Annotated[CreateWordDTO, Body()],
   current_user: User = Depends(get_current_active_user)
 ):
   """Create a new word - Requires CREATE_WORD entitlement or admin role"""
@@ -60,7 +60,7 @@ def create_word(
 def update_word(
   session: SessionDep, 
   word_id: int, 
-  word: Annotated[Word, Body()],
+  word: Annotated[UpdateWordDTO, Body()],
   current_user: User = Depends(get_current_active_user)
 ):
   """Update an existing word - Requires EDIT_WORD entitlement or admin role"""

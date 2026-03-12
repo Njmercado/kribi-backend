@@ -1,3 +1,4 @@
+from alembic.environment import Optional
 from sqlmodel import SQLModel, Field, Column, ARRAY, String
 from datetime import datetime
 from enum import Enum
@@ -186,3 +187,13 @@ class Word(SQLModel, table=True):
 class WordDTO(BaseModel):
   words: list[Word]
   has_next_page: bool
+
+class CreateWordDTO(BaseModel):
+  word: str
+  definitions: Optional[list[str]] = None
+  translations: Optional[list[str]] = None
+  examples: Optional[list[str]] = None
+  type: WordType = WordType.NONE
+
+class UpdateWordDTO(CreateWordDTO):
+  id: int

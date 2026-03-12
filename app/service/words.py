@@ -1,7 +1,7 @@
 from model.user import User
 from data import words
 from db import SessionDep
-from fastapi import exceptions, Response, HTTPException
+from fastapi import exceptions, Response, HTTPException 
 from model.word import Word
 from utils import responses
 from utils.words import transform_input_to_regexp
@@ -49,7 +49,7 @@ def create_word(session: SessionDep, word: Word, user: User):
 def update_word(session: SessionDep, word_id: int, word: Word, user_id: int):
 	try:
 		response = words.update_word(session, word_id, word, user_id)
-		return Response(status_code=200, content=f"Word '{response.word}' updated successfully :)")
+		return Response(status_code=200)
 	except exceptions.ValidationException as e:
 		raise HTTPException(status_code=400, detail=str(e))
 

@@ -2,28 +2,17 @@ import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from fastapi import HTTPException, status
 from db import SessionDep
 from data import users
 from model.user import User
 from model.auth import TokenData, Token
+from utils.auth import verify_password
 
 # Configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here-change-this-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-  """Verify a plain password against its hash."""
-  return pwd_context.verify(plain_password, hashed_password)
-
-def get_password_hash(password: str) -> str:
-  """Hash a password."""
-  return pwd_context.hash(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
   """Create a JWT access token."""

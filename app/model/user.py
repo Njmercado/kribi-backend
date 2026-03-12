@@ -50,19 +50,21 @@ class User(SQLModel, table=True):
   created_at: datetime = Field(default_factory=datetime.now)
   updated_at: datetime = Field(default_factory=datetime.now)
 
-# Pydantic models for request/response
-class UserCreate(SQLModel):
+class UserCreateDTO(BaseModel):
   email: str
   username: str
   name: str
   last_name: str
-  password: str
+  role: Role
+  entitlements: List[Entitlement]
+  location: Optional[str] = None
+  phone: Optional[str] = None
 
-class UserLogin(SQLModel):
+class UserLogin(BaseModel):
   email: str
   password: str
 
-class UserResponse(SQLModel):
+class UserResponse(BaseModel):
   id: int
   email: str
   username: str

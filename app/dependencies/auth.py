@@ -89,7 +89,8 @@ def require_entitlements(required_entitlements: List[Entitlement]) -> Callable:
       return current_user
 
     # Fall back to explicit entitlement check
-    missing_entitlements = [entitlement for entitlement in required_entitlements if entitlement not in current_user.entitlements]
+    user_entitlements = [Entitlement(ent) for ent in current_user.entitlements]
+    missing_entitlements = [entitlement for entitlement in required_entitlements if entitlement not in user_entitlements]
     if missing_entitlements:
       raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,

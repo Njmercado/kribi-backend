@@ -190,8 +190,8 @@ class WordDTO(BaseModel):
 
 class CreateWordDTO(BaseModel):
   word: str
-  definitions: Optional[list[str]] = None
-  translations: Optional[list[str]] = None
+  definitions: list[str] = None
+  translations: list[str] = None
   examples: Optional[list[str]] = None
   type: WordType = WordType.NONE
 

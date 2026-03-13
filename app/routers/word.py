@@ -6,6 +6,7 @@ from model.word import CreateWordDTO, UpdateWordDTO, WordDTO
 from model.user import User
 from dependencies.auth import (
   get_current_active_user, 
+  get_current_active_user_v2,
   CreateWordRequired, 
   EditWordRequired, 
   DeleteWordRequired,
@@ -36,10 +37,11 @@ def search_words(
   session: SessionDep,
   word: Annotated[str, Query(description="Search term")],
   page: Annotated[int, Query(ge=1, description="Page number")] = 1, 
-  limit: Annotated[int, Query(ge=1, le=100, description="Number of results per page")] = 10
+  limit: Annotated[int, Query(ge=1, le=100, description="Number of results per page")] = 10,
+  current_user: User = Depends(get_current_active_user_v2)
 ):
   """Search words by substring or exact match - Public access"""
-  return words.search_words(session, word, page, limit)
+  return words.search_words(session, word, page, limit, current_user)
 
 @router.get("/random")
 def get_random_words(session: SessionDep, quantity: int = Query(1, ge=1, le=10)):

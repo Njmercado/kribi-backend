@@ -1,9 +1,9 @@
 from model.user import User, UserCreateDTO, UserUpdateDTO
 from data import users
 from db import SessionDep
-from fastapi import HTTPException, exceptions
+from fastapi import HTTPException, Response, exceptions
 from utils.words import transform_input_to_regexp
-from utils.responses import USER_RESTORED_SUCCESSFULLY, USER_DELETED_SUCCESSFULLY
+from utils.responses import USER_RESTORED_SUCCESSFULLY
 
 def search_user(session: SessionDep, current_user: User, value: str, page: int, limit: int):
   try:
@@ -17,7 +17,7 @@ def restore_user(session: SessionDep, user_id: int):
     if not user:
       raise exceptions.ValidationException(f"User with ID {user_id} not found.")
     users.restore_user(session, user)
-    return USER_RESTORED_SUCCESSFULLY(user_id)
+    return Response(status_code=204)
   except exceptions.ValidationException as e:
     raise HTTPException(status_code=404, detail=str(e))
   except Exception as e:
@@ -29,7 +29,7 @@ def delete_user(session: SessionDep, user_id: int):
     if not user:
       raise exceptions.ValidationException(f"User with ID {user_id} not found.")
     users.delete_user(session, user)
-    return USER_DELETED_SUCCESSFULLY(user_id)
+    return Response(status_code=204)
   except exceptions.ValidationException as e:
     raise HTTPException(status_code=404, detail=str(e))
   except Exception as e:

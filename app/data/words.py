@@ -7,7 +7,6 @@ from sqlalchemy.orm import load_only
 from model.user import User
 from sqlalchemy import func
 
-# TODO: adjust this logic because this should be using a DTO model instead of of the load_only
 def get_word_by_id(session: SessionDep, word_id: str) -> Word: 
 	return session.exec(
 		select(Word)
@@ -28,7 +27,7 @@ def get_all_words_from_letter(session: SessionDep, letter: str, page: int, limit
   )
   return session.exec(query).all()
 
-def get_all_words_from_search(session: SessionDep, regex_subs: str, page: int, limit: int):
+def get_all_words_from_search(session: SessionDep, regex_subs: str, page: int, limit: int, show_all: bool = False):
 	search_filters = or_(
 		# Search in word name using regex
 		func.lower(Word.word).op("~")(regex_subs),
@@ -40,12 +39,17 @@ def get_all_words_from_search(session: SessionDep, regex_subs: str, page: int, l
 		func.lower(func.array_to_string(Word.definitions, '|')).op("~")(regex_subs),
 	)
 
+	search_with_delete_filter = select(Word).where(
+		search_filters,
+		Word.deleted == False
+	)
+
+	search_all = select(Word).where(
+		search_filters
+	)
+
 	results = session.exec(
-  	select(Word)
-  	.where(
-			search_filters,
-      Word.deleted == False
-    )
+  	(search_all if show_all else search_with_delete_filter)
    	.offset((page - 1) * limit)
     .limit(limit + 1)  # Fetch one extra to check if there's a next page
   ).all()

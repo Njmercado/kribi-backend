@@ -23,35 +23,52 @@ ENTITLEMENT_ROLE_MAP = {
   Entitlement.RESTORE_USER: [Role.USER_ADMIN],
 }
 
-def get_token_from_cookie(request: Request) -> Optional[str]:
-  """Extract JWT token from httpOnly cookie."""
-  return request.cookies.get("access_token")
+CREDENTIALS_EXCEPTION = HTTPException(
+  status_code=status.HTTP_401_UNAUTHORIZED,
+  detail="Could not validate credentials",
+  headers={"WWW-Authenticate": "Bearer"},
+)
 
-async def get_current_active_user(session: SessionDep, request: Request) -> User:
-  """Get current active user from JWT Token stored in httpOnly cookie"""
+AUTH_REQUIRED_EXCEPTION = HTTPException(
+  status_code=status.HTTP_401_UNAUTHORIZED,
+  detail="Authentication token not found or invalid",
+  headers={"WWW-Authenticate": "Bearer"},
+)
 
-  credentials_exception = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Could not validate credentials",
-    headers={"WWW-Authenticate": "Bearer"},
-  )
-
-  token = get_token_from_cookie(request)
-  if not token:
-    raise HTTPException(
-      status_code=status.HTTP_401_UNAUTHORIZED,
-      detail="Authentication token not found",
-      headers={"WWW-Authenticate": "Bearer"},
-    )
-
+def handle_token_verification(session: SessionDep,token: str) -> User:
   token_data = verify_token(token)
   user = get_user_by_email(session, email=token_data.email)
   if user is None:
-    raise credentials_exception
+    raise CREDENTIALS_EXCEPTION
 
   if not user.is_active:
     raise HTTPException(status_code=400, detail="Inactive user")
   return user
+
+def get_token_from_cookie(request: Request) -> Optional[str]:
+  """Extract JWT token from httpOnly cookie."""
+  return request.cookies.get("access_token")
+
+async def get_current_active_user_v2(session: SessionDep, request: Request) -> User:
+  """
+    Get current active user from JWT Token stored in httpOnly cookie. Returns None if no valid token is found.
+    This is mostly used for endpoints that allow optional authentication - if a valid token is present, it returns the user,
+    otherwise it returns None and the endpoint can decide how to handle unauthenticated requests.
+  """
+  token = get_token_from_cookie(request)
+  if not token:
+    return None
+
+  return handle_token_verification(session, token)
+
+async def get_current_active_user(session: SessionDep, request: Request) -> User:
+  """Get current active user from JWT Token stored in httpOnly cookie"""
+
+  token = get_token_from_cookie(request)
+  if not token:
+    raise AUTH_REQUIRED_EXCEPTION
+
+  return handle_token_verification(session, token)
 
 def require_roles(allowed_roles: List[Role]) -> Callable:
   """Dependency factory to check if user has required roles."""

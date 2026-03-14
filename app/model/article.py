@@ -15,6 +15,7 @@ class Article(SQLModel, table=True):
   updated_by: int = Field(default=None, foreign_key="user.id")
   public: bool = Field(default=True)
   tags: list[str] = Field(default=[], sa_column=Column(ARRAY(String), server_default='{}'))
+  cover: str = Field(default="", nullable=True)
 
 class CreateArticle(SQLModel):
 	title: str
@@ -23,6 +24,7 @@ class CreateArticle(SQLModel):
 	authors: list[int] = []
 	public: bool = True
 	tags: list[str] = []
+	cover: str = ""
 
 class CreatedArticle(SQLModel):
   id: int
@@ -33,6 +35,7 @@ class CreatedArticle(SQLModel):
   created_by: int
   public: bool
   tags: list[str]
+  cover: str
   created_at: datetime
 
 class ArticleDTO(BaseModel):
@@ -46,6 +49,7 @@ class ArticleDTO(BaseModel):
 	created_by: int
 	public: bool
 	tags: list[str]
+	cover: str
 
 class ArticlesDTO(BaseModel):
 	articles: list[ArticleDTO]
@@ -59,3 +63,4 @@ class UpdateArticle(SQLModel):
 	public: bool = True
 	tags: list[str]
 	updated_at: datetime = datetime.now()
+	cover: str

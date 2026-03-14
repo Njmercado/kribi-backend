@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Query
-from dependencies.auth import ViewArticleRequired, EditArticleRequired, DeleteArticleRequired, CreateArticleRequired
+from fastapi import APIRouter, Query, Body
+from dependencies.auth import EditArticleRequired, DeleteArticleRequired, CreateArticleRequired
 from db import SessionDep
 from service import articles
 from dependencies.auth import get_current_active_user
 from fastapi import Depends
 from model.user import User
-from model.article import Article, ArticlesDTO, CreateArticle, ArticleDTO, UpdateArticle
+from model.article import ArticlesDTO, CreateArticle, ArticleDTO, UpdateArticle
 from typing import Annotated
 
 router = APIRouter(
@@ -32,7 +32,12 @@ def create_article(session: SessionDep, article: CreateArticle, current_user: Us
   return articles.create_article(session, current_user, article)
 
 @router.put("/{article_id}", dependencies=[EditArticleRequired])
-def update_article(session: SessionDep, article_id: int, article_data: UpdateArticle, current_user: User = Depends(get_current_active_user)):
+def update_article(
+  session: SessionDep,
+  article_id: int,
+  article_data: Annotated[UpdateArticle, Body()],
+  current_user: User = Depends(get_current_active_user)
+):
   return articles.update_article(session, current_user, article_id, article_data)
 
 @router.delete("/{article_id}", dependencies=[DeleteArticleRequired])

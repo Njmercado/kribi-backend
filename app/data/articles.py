@@ -1,5 +1,5 @@
 from db import SessionDep
-from model.article import Article, ArticleDTO, ArticlesDTO, CreateArticle, CreatedArticle, UpdateArticle
+from model.article import Article, ArticleDTO, ArticlesDTO, CreateArticle, CreatedArticle, UpdateArticle, ArticleSynopsisDTO
 from datetime import datetime
 from model.user import User
 from sqlmodel import select, update
@@ -32,11 +32,8 @@ def create_article(session: SessionDep, current_user: User, article: CreateArtic
   article_to_create.created_by = article_to_create.updated_by = current_user.id
   session.add(article_to_create)
   session.commit()
-  session.refresh(article_to_create)
-  return CreatedArticle.model_validate(article_to_create)
 
 def update_article(session: SessionDep, current_user: User, article_id: int, article_data: UpdateArticle):
-  # existing_article = get_article_by_id(session, article_id)
   existing_article = session.exec(
     select(Article)
     .where(Article.id == article_id, Article.deleted == False)
@@ -70,3 +67,11 @@ def delete_article(session: SessionDep, current_user: User, article_id: int):
   existing_article.updated_by = current_user.id
   session.add(existing_article)
   session.commit()
+
+def get_all_articles_synopsis(session: SessionDep) -> list[ArticleSynopsisDTO]:
+  articles = session.exec(
+    select(Article.cover, Article.title, Article.summary, Article.id, Article.created_at)
+    .where(Article.deleted == False)
+  ).all()
+
+  return articles

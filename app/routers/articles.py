@@ -5,7 +5,7 @@ from service import articles
 from dependencies.auth import get_current_active_user
 from fastapi import Depends
 from model.user import User
-from model.article import ArticlesDTO, CreateArticle, ArticleDTO, UpdateArticle
+from model.article import ArticleSynopsisDTO, ArticlesDTO, CreateArticle, ArticleDTO, UpdateArticle
 from typing import Annotated
 
 router = APIRouter(
@@ -13,6 +13,12 @@ router = APIRouter(
   tags=["articles"],
   responses={404: {"description": "Not found"}},
 )
+
+@router.get("/synopsis", response_model=list[ArticleSynopsisDTO])
+def get_all_articles_synopsis(
+  session: SessionDep,
+):
+  return articles.get_all_articles_synopsis(session)
 
 @router.get("/search", response_model=ArticlesDTO)
 def get_articles_by_name(
@@ -24,7 +30,7 @@ def get_articles_by_name(
   return articles.get_articles_by_name(session, value, page, limit)
 
 @router.get("/{article_id}")
-def get_article(session: SessionDep, article_id: int) -> ArticleDTO:
+def get_article_by_id(session: SessionDep, article_id: int) -> ArticleDTO:
   return articles.get_article_by_id(session, article_id)
 
 @router.post("/", dependencies=[CreateArticleRequired])

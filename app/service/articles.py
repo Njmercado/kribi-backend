@@ -1,11 +1,17 @@
 from db import SessionDep
 from data import articles
 from fastapi import HTTPException
-from model.article import Article, ArticleDTO, ArticlesDTO, CreateArticle, UpdateArticle
+from model.article import ArticleSynopsisDTO, ArticleDTO, ArticlesDTO, CreateArticle, UpdateArticle
 from model.user import User
 from fastapi import exceptions
 from utils.responses import ARTICLE_DELETED_SUCCESSFULLY
 from fastapi import Response
+
+def get_all_articles_synopsis(session: SessionDep) -> ArticleSynopsisDTO:
+  try:
+    return articles.get_all_articles_synopsis(session)
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
 
 def get_article_by_id(session: SessionDep, article_id: int) -> ArticleDTO:
   try:
@@ -25,7 +31,8 @@ def get_articles_by_name(session: SessionDep, name: str, page: int, limit: int) 
 
 def create_article(session: SessionDep, user: User, article: CreateArticle):
   try:
-    return articles.create_article(session, user, article)
+    articles.create_article(session, user, article)
+    return Response(status_code=201)
   except exceptions.ValidationException as e:
     raise HTTPException(status_code=404, detail=str(e))
   except Exception as e:

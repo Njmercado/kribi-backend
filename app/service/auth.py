@@ -12,7 +12,7 @@ from utils.auth import verify_password
 # Configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here-change-this-in-production")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_WEEKS = 1
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
   """Create a JWT access token."""
@@ -20,8 +20,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
   if expires_delta:
     expire = datetime.now(timezone.utc) + expires_delta
   else:
-    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    
+    expire = datetime.now(timezone.utc) + timedelta(weeks=ACCESS_TOKEN_EXPIRE_WEEKS)
+
   to_encode.update({"exp": expire})
   encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
   return encoded_jwt
@@ -73,7 +73,7 @@ def login(session: SessionDep, email: str, password: str) -> Token:
       detail="Inactive user"
     )
 
-  access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+  access_token_expires = timedelta(weeks=ACCESS_TOKEN_EXPIRE_WEEKS)
   access_token = create_access_token(
     data={"sub": user.email}, 
     expires_delta=access_token_expires

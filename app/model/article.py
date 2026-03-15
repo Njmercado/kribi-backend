@@ -64,3 +64,10 @@ class UpdateArticle(SQLModel):
 	tags: list[str]
 	updated_at: datetime = datetime.now()
 	cover: str
+
+class ArticleSynopsisDTO(BaseModel):
+	id: int
+	title: str
+	summary: str
+	cover: str
+	created_at: datetime
